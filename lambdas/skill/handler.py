@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import uuid
 
 import boto3
@@ -11,6 +12,15 @@ AGENT_ALIAS_ID = os.environ["AGENT_ALIAS_ID"]
 
 
 CONFIRMATION_WORDS = {"confirmo", "confirmado", "afirmativo", "correcto", "exacto", "dale", "adelante", "procede", "proceder"}
+
+
+def strip_markdown(text: str) -> str:
+    text = re.sub(r'\*\*([^*]+)\*\*', r'\1', text)
+    text = re.sub(r'\*([^*]+)\*', r'\1', text)
+    text = re.sub(r'#{1,6}\s+', '', text)
+    text = re.sub(r'^\s*[-*+]\s+', '', text, flags=re.MULTILINE)
+    text = re.sub(r'`([^`]+)`', r'\1', text)
+    return text.strip()
 
 def invoke_agent(message: str, session_id: str) -> str:
     print(f"invoke_agent session={session_id} message={message!r}")
@@ -24,6 +34,7 @@ def invoke_agent(message: str, session_id: str) -> str:
     for chunk in response["completion"]:
         if "chunk" in chunk:
             completion += chunk["chunk"]["bytes"].decode("utf-8")
+    completion = strip_markdown(completion)
     print(f"invoke_agent response={completion!r}")
     return completion
 

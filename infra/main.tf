@@ -62,8 +62,6 @@ module "lambdas" {
   common_tags         = local.common_tags
   lambda_role_arn     = module.iam.lambda_role_arn
   dynamodb_table_name = module.dynamodb.table_name
-  agent_id            = ""
-  agent_alias_id      = ""
 }
 
 module "bedrock_agent" {
@@ -77,28 +75,19 @@ module "bedrock_agent" {
   kb_bucket_arn                = aws_s3_bucket.kb_docs.arn
 }
 
+module "skill" {
+  source          = "./modules/skill"
+  name_prefix     = local.name_prefix
+  common_tags     = local.common_tags
+  lambda_role_arn = module.iam.lambda_role_arn
+  agent_id        = module.bedrock_agent.agent_id
+  agent_alias_id  = module.bedrock_agent.agent_alias_id
+}
+
 resource "aws_lambda_permission" "alexa" {
   statement_id       = "AllowAlexaInvoke"
   action             = "lambda:InvokeFunction"
-  function_name      = module.lambdas.skill_function_name
+  function_name      = module.skill.function_name
   principal          = "alexa-appkit.amazon.com"
   event_source_token = var.alexa_skill_id != "" ? var.alexa_skill_id : null
-}
-
-resource "terraform_data" "skill_env" {
-  depends_on = [module.lambdas, module.bedrock_agent]
-
-  triggers_replace = [
-    module.bedrock_agent.agent_id,
-    module.bedrock_agent.agent_alias_id,
-  ]
-
-  provisioner "local-exec" {
-    command = <<-EOF
-      aws lambda update-function-configuration \
-        --function-name ${module.lambdas.skill_function_name} \
-        --environment "Variables={AGENT_ID=${module.bedrock_agent.agent_id},AGENT_ALIAS_ID=${module.bedrock_agent.agent_alias_id}}" \
-        --region ${var.aws_region}
-    EOF
-  }
 }

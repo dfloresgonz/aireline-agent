@@ -10,6 +10,10 @@ variable "lambda_role_arn" {
   type = string
 }
 
-variable "dynamodb_table_name" {
+variable "agent_id" {
+  type = string
+}
+
+variable "agent_alias_id" {
   type = string
 }

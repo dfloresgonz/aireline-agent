@@ -7,7 +7,39 @@
           "summary": "Reserva vuelos y consulta tus reservaciones con tu aerolínea.",
           "description": "Gestiona tus reservaciones de vuelo, consulta políticas de equipaje, cancelaciones y mascotas con ayuda de inteligencia artificial.",
           "examplePhrases": [
-            "Alexa, abre asistente de aerolínea",
+            "Alexa, abre asistente vuelos",
+            "quiero reservar un vuelo",
+            "consulta mi reservación"
+          ],
+          "keywords": [
+            "vuelos",
+            "reservaciones",
+            "aerolínea",
+            "viajes"
+          ]
+        },
+        "es-US": {
+          "name": "Asistente de Aerolínea",
+          "summary": "Reserva vuelos y consulta tus reservaciones con tu aerolínea.",
+          "description": "Gestiona tus reservaciones de vuelo, consulta políticas de equipaje, cancelaciones y mascotas con ayuda de inteligencia artificial.",
+          "examplePhrases": [
+            "Alexa, abre asistente vuelos",
+            "quiero reservar un vuelo",
+            "consulta mi reservación"
+          ],
+          "keywords": [
+            "vuelos",
+            "reservaciones",
+            "aerolínea",
+            "viajes"
+          ]
+        },
+        "es-MX": {
+          "name": "Asistente de Aerolínea",
+          "summary": "Reserva vuelos y consulta tus reservaciones con tu aerolínea.",
+          "description": "Gestiona tus reservaciones de vuelo, consulta políticas de equipaje, cancelaciones y mascotas con ayuda de inteligencia artificial.",
+          "examplePhrases": [
+            "Alexa, abre asistente vuelos",
             "quiero reservar un vuelo",
             "consulta mi reservación"
           ],

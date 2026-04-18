@@ -44,6 +44,12 @@ def handle_alexa(event: dict) -> dict:
                 reprompt="¿Quieres reservar un vuelo?",
             )
 
+        if intent == "AMAZON.FallbackIntent":
+            return alexa_response(
+                "No entendí bien. Puedes decirme por ejemplo: quiero reservar un vuelo, o consulta mi reservación.",
+                reprompt="¿En qué te puedo ayudar?",
+            )
+
         if intent == "ChatIntent":
             slots = event["request"]["intent"].get("slots", {})
             query = slots.get("query", {}).get("value", "")

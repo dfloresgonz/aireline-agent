@@ -23,11 +23,11 @@ output "kb_bucket_name" {
 }
 
 output "skill_function_name" {
-  value = module.lambdas.skill_function_name
+  value = module.skill.function_name
 }
 
 output "skill_function_url" {
-  value = module.lambdas.skill_function_url
+  value = module.skill.function_url
 }
 
 output "reserva_function_name" {

@@ -144,12 +144,17 @@ resource "aws_bedrockagent_agent" "main" {
   idle_session_ttl_in_seconds = 600
 
   instruction = <<-EOT
-    You are a helpful airline assistant. You help customers with:
-    - Booking new flight reservations using the reservar_vuelo function.
-    - Looking up existing reservations using the consultar_reserva function.
-    Consult the knowledge base for questions about baggage, cancellations, and pet policies.
-    Always confirm reservation details with the customer before booking.
-    Be concise, polite, and professional. Respond in the same language the customer uses.
+    You are a helpful airline assistant. Respond in the same language the customer uses. Be concise and polite.
+
+    You can:
+    - Book flights with reservar_vuelo (needs: passenger_name, flight_number, departure_date, seat_class).
+    - Look up reservations with consultar_reserva.
+    - Answer policy questions using the knowledge base.
+
+    IMPORTANT - reservation rule: you MUST ask a confirmation question before calling reservar_vuelo.
+    List all details and end with "¿Confirmas?" (or equivalent in the customer's language).
+    Call reservar_vuelo ONLY after the customer answers yes.
+    If the customer says no, cancel and ask what else you can help with.
   EOT
 
   tags = var.common_tags
@@ -204,7 +209,7 @@ resource "aws_bedrockagent_agent_action_group" "reservar" {
         parameters {
           map_block_key = "flight_number"
           type          = "string"
-          description   = "Flight number (e.g. AA123)"
+          description   = "Flight number"
           required      = true
         }
         parameters {

@@ -10,7 +10,10 @@ AGENT_ID = os.environ["AGENT_ID"]
 AGENT_ALIAS_ID = os.environ["AGENT_ALIAS_ID"]
 
 
+CONFIRMATION_WORDS = {"confirmo", "confirmado", "afirmativo", "correcto", "exacto", "dale", "adelante", "procede", "proceder"}
+
 def invoke_agent(message: str, session_id: str) -> str:
+    print(f"invoke_agent session={session_id} message={message!r}")
     response = bedrock_agent_runtime.invoke_agent(
         agentId=AGENT_ID,
         agentAliasId=AGENT_ALIAS_ID,
@@ -21,6 +24,7 @@ def invoke_agent(message: str, session_id: str) -> str:
     for chunk in response["completion"]:
         if "chunk" in chunk:
             completion += chunk["chunk"]["bytes"].decode("utf-8")
+    print(f"invoke_agent response={completion!r}")
     return completion
 
 
@@ -45,16 +49,25 @@ def handle_alexa(event: dict) -> dict:
             )
 
         if intent == "AMAZON.FallbackIntent":
-            return alexa_response(
-                "No entendí bien. Puedes decirme por ejemplo: quiero reservar un vuelo, o consulta mi reservación.",
-                reprompt="¿En qué te puedo ayudar?",
-            )
+            answer = invoke_agent("no entendí bien lo que dijiste, ¿puedes repetirlo?", session_id)
+            return alexa_response(answer, reprompt="Di sí para confirmar o no para cancelar.")
 
-        if intent == "ChatIntent":
+        if intent in ("ChatIntent", "AMAZON.YesIntent"):
             slots = event["request"]["intent"].get("slots", {})
-            query = slots.get("query", {}).get("value", "")
+            query = slots.get("query", {}).get("value") or "sí"
+            words = set(query.lower().split())
+            if words & CONFIRMATION_WORDS:
+                query = "sí, confirmo"
             answer = invoke_agent(query, session_id)
-            return alexa_response(answer, reprompt="¿Hay algo más en lo que te pueda ayudar?")
+            if "confirmas" in answer.lower() or "confirma" in answer.lower():
+                reprompt = "Di sí para confirmar o no para cancelar."
+            else:
+                reprompt = "¿Hay algo más en lo que te pueda ayudar?"
+            return alexa_response(answer, reprompt=reprompt)
+
+        if intent == "AMAZON.NoIntent":
+            answer = invoke_agent("no, cancela", session_id)
+            return alexa_response(answer, reprompt="¿En qué más te puedo ayudar?")
 
     if request_type == "SessionEndedRequest":
         return {"version": "1.0", "response": {}}

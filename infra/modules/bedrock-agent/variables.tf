@@ -22,6 +22,10 @@ variable "consultar_reserva_lambda_arn" {
   type = string
 }
 
+variable "consultar_clima_lambda_arn" {
+  type = string
+}
+
 variable "kb_bucket_arn" {
   type = string
 }

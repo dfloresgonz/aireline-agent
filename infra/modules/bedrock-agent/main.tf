@@ -259,6 +259,42 @@ resource "aws_bedrockagent_agent_action_group" "consultar" {
   depends_on = [aws_lambda_permission.bedrock_consultar_reserva]
 }
 
+resource "aws_lambda_permission" "bedrock_consultar_clima" {
+  statement_id  = "AllowBedrockInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = var.consultar_clima_lambda_arn
+  principal     = "bedrock.amazonaws.com"
+  source_arn    = "arn:aws:bedrock:${local.region}:${local.account_id}:agent/${aws_bedrockagent_agent.main.agent_id}"
+}
+
+resource "aws_bedrockagent_agent_action_group" "clima" {
+  agent_id          = aws_bedrockagent_agent.main.agent_id
+  agent_version     = "DRAFT"
+  action_group_name = "consultar-clima"
+  description       = "Get current weather for a city"
+
+  action_group_executor {
+    lambda = var.consultar_clima_lambda_arn
+  }
+
+  function_schema {
+    member_functions {
+      functions {
+        name        = "consultar_clima"
+        description = "Returns current temperature and weather condition for a given city"
+        parameters {
+          map_block_key = "city"
+          type          = "string"
+          description   = "City name (e.g. Mexico City, Miami, Madrid)"
+          required      = true
+        }
+      }
+    }
+  }
+
+  depends_on = [aws_lambda_permission.bedrock_consultar_clima]
+}
+
 # ── Agent Alias ───────────────────────────────────────────────────────────────
 
 resource "aws_bedrockagent_agent_alias" "live" {
@@ -269,6 +305,7 @@ resource "aws_bedrockagent_agent_alias" "live" {
   depends_on = [
     aws_bedrockagent_agent_action_group.reservar,
     aws_bedrockagent_agent_action_group.consultar,
+    aws_bedrockagent_agent_action_group.clima,
     aws_bedrockagent_agent_knowledge_base_association.main,
   ]
 }

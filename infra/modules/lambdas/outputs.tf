@@ -1,3 +1,7 @@
+output "consultar_clima_arn" {
+  value = aws_lambda_function.consultar_clima.arn
+}
+
 output "reserva_arn" {
   value = aws_lambda_function.reserva.arn
 }

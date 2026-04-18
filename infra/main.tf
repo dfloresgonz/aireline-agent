@@ -72,6 +72,7 @@ module "bedrock_agent" {
   agent_role_arn               = module.iam.bedrock_agent_role_arn
   reserva_lambda_arn           = module.lambdas.reserva_arn
   consultar_reserva_lambda_arn = module.lambdas.consultar_reserva_arn
+  consultar_clima_lambda_arn   = module.lambdas.consultar_clima_arn
   kb_bucket_arn                = aws_s3_bucket.kb_docs.arn
 }
 

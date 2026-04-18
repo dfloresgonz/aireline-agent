@@ -4,52 +4,47 @@ Agente conversacional para aerolíneas construido sobre **Amazon Bedrock Agents*
 
 ## Arquitectura
 
-```
-Usuario / Alexa
-      │
-      ▼
-┌─────────────────┐
-│  skill Lambda   │  ← HTTP (Function URL) o Alexa SDK
-│  (entry point)  │
-└────────┬────────┘
-         │ InvokeAgent
-         ▼
-┌─────────────────────────────────────────────────────┐
-│               Amazon Bedrock Agent                  │
-│  foundation model: Claude 3 Haiku                   │
-│                                                     │
-│  ┌──────────────────┐   ┌───────────────────────┐  │
-│  │  Action Groups   │   │    Knowledge Base     │  │
-│  │  ┌────────────┐  │   │  Titan Embed v2       │  │
-│  │  │  reservar  │──┼──▶│  S3 Vectors (index)   │  │
-│  │  │   vuelo    │  │   │  docs: equipaje,      │  │
-│  │  └────────────┘  │   │  cancelaciones,       │  │
-│  │  ┌────────────┐  │   │  mascotas             │  │
-│  │  │ consultar  │  │   └───────────────────────┘  │
-│  │  │  reserva  │  │                               │
-│  │  └────────────┘  │                               │
-│  └──────────────────┘                               │
-└────────────┬────────────────────────────────────────┘
-             │ InvokeFunction
-    ┌────────┴────────┐
-    │                 │
-    ▼                 ▼
-┌────────┐     ┌──────────────────┐
-│reserva │     │ consultar-reserva│
-│ Lambda │     │     Lambda       │
-└───┬────┘     └────────┬─────────┘
-    │                   │
-    └─────────┬─────────┘
-              ▼
-       ┌─────────────┐
-       │  DynamoDB   │
-       │ reservations│
-       └─────────────┘
+```mermaid
+graph LR
+    User["👤 You"] --> Echo["Echo Dot"]
+    Echo --> Alexa["Alexa"]
+    Alexa --> Skill["λ skill\n(entry point)"]
 
-┌──────────────────────┐
-│  MCP Weather Tool    │  ← servidor local MCP (no Lambda)
-│  mcp/weather-tool/   │
-└──────────────────────┘
+    Skill -->|InvokeAgent| Agent
+
+    subgraph AWS["AWS Cloud"]
+        subgraph Bedrock["Bedrock Agent"]
+            subgraph AG["Action Groups"]
+                Reserva["λ reserva"]
+                ConsultarReserva["λ consultar-reserva"]
+                ConsultarClima["λ consultar-clima\n(MCP client)"]
+            end
+            Claude["LLM\nclaude-haiku-4-5"]
+            Agent["Bedrock Agent\norchestrator"]
+            Agent --- Claude
+            Agent --- AG
+            Agent --- KB
+        end
+
+        KB["Bedrock\nKnowledge Base"]
+        KB --> S3Vec["S3 Vector Store\n(embeddings)"]
+        KB --> KBDocs["S3 kb-docs\n(documentos fuente)"]
+
+        Reserva --> Dynamo["DynamoDB\nreservations"]
+        ConsultarReserva --> Dynamo
+
+        ConsultarClima -->|JSON-RPC MCP| MCPServer["λ mcp-weather-server\n(MCP server)"]
+    end
+
+    MCPServer -->|HTTP| Weather["Weather API\nwttr.in"]
+
+    style Agent fill:#f5f0dc,stroke:#d4a017
+    style AG fill:#fff8e6,stroke:#d4a017,stroke-dasharray:5
+    style Claude fill:#ff9999,stroke:#cc0000
+    style KB fill:#99ccff,stroke:#0066cc
+    style Dynamo fill:#cc66ff,stroke:#6600cc
+    style S3Vec fill:#66cc66,stroke:#006600
+    style MCPServer fill:#ff9933,stroke:#cc6600
 ```
 
 ## Estructura del proyecto
@@ -58,12 +53,11 @@ Usuario / Alexa
 airline-agent-demo/
 │
 ├── lambdas/
-│   ├── skill/               # Entry point: recibe mensajes e invoca el agente
-│   ├── reserva/             # Acción: crea una reservación en DynamoDB
-│   └── consultar-reserva/   # Acción: consulta una reservación por ID
-│
-├── mcp/
-│   └── weather-tool/        # Servidor MCP local para consulta de clima
+│   ├── skill/                  # Entry point: Alexa + HTTP, invoca el agente
+│   ├── reserva/                # Action group: crea reservación en DynamoDB
+│   ├── consultar-reserva/      # Action group: consulta reservación por ID
+│   ├── consultar-clima/        # Action group: MCP client → weather server
+│   └── mcp-weather-server/     # MCP server: expone consultar_clima via JSON-RPC
 │
 ├── knowledge-base/
 │   └── docs/
@@ -71,12 +65,7 @@ airline-agent-demo/
 │       ├── cancelaciones.md
 │       └── mascotas.md
 │
-├── agent/
-│   └── schemas/             # Esquemas de funciones del agente (referencia)
-│       ├── reservar-vuelo.json
-│       └── consultar-reserva.json
-│
-├── alexa/                   # Alexa Skill manifest e interaction model (es-ES)
+├── alexa/                   # Alexa Skill manifest e interaction model (es-ES, es-US, es-MX)
 │
 ├── infra/                   # Terraform
 │   ├── main.tf
@@ -97,11 +86,11 @@ airline-agent-demo/
 
 ## Prerrequisitos
 
-- [Terraform](https://developer.hashicorp.com/terraform/install) >= 1.5
+- [Terraform](https://developer.hashicorp.com/terraform/install) >= 1.6
 - [AWS CLI](https://aws.amazon.com/cli/) configurado (`aws configure`)
 - Python 3.12 (solo para desarrollo local)
 - Acceso a modelos habilitado en Bedrock (región `us-east-1`):
-  - `anthropic.claude-3-haiku-20240307-v1:0`
+  - `us.anthropic.claude-haiku-4-5-20251001-v1:0` (cross-region inference profile)
   - `amazon.titan-embed-text-v2:0`
 
 ## Quick start
@@ -186,17 +175,11 @@ curl -X POST <skill_function_url> \
 | Políticas de equipaje | Knowledge Base (RAG) |
 | Políticas de cancelación | Knowledge Base (RAG) |
 | Viaje con mascotas | Knowledge Base (RAG) |
-| Consulta de clima | MCP Weather Tool (local) |
+| Consulta de clima | MCP client → MCP server Lambda → wttr.in |
 
-## MCP Weather Tool
+## MCP Weather Stack
 
-Servidor MCP local para integrar consulta de clima con agentes que soporten el protocolo MCP.
-
-```bash
-cd mcp/weather-tool
-pip install -r requirements.txt
-python server.py
-```
+El agente invoca `consultar-clima` (action group / MCP client) que se comunica con `mcp-weather-server` (Lambda con Function URL) usando el protocolo MCP estándar (JSON-RPC 2.0, `protocolVersion: 2024-11-05`). El server expone `tools/list` y `tools/call` y llama a `wttr.in` sin API key.
 
 ## Makefile
 
@@ -210,14 +193,14 @@ make destroy   # destruye toda la infraestructura (pide confirmación)
 
 | Recurso | Descripción |
 |---|---|
-| `aws_bedrockagent_agent` | Agente Bedrock con Claude 3 Haiku |
+| `aws_bedrockagent_agent` | Agente Bedrock con Claude Haiku 4.5 (cross-region inference) |
 | `aws_bedrockagent_knowledge_base` | KB con Titan Embed v2 |
 | `aws_s3vectors_vector_bucket` | Vector store (pay-per-use, sin costo fijo) |
 | `aws_s3vectors_index` | Índice vectorial (cosine, 1024 dims, float32) |
 | `aws_s3_bucket` | Bucket S3 para documentos fuente |
 | `aws_dynamodb_table` | Tabla de reservaciones (PAY_PER_REQUEST) |
-| `aws_lambda_function` × 3 | skill, reserva, consultar-reserva |
-| `aws_iam_role` × 3 | Lambda, Bedrock Agent, Knowledge Base |
+| `aws_lambda_function` × 5 | skill, reserva, consultar-reserva, consultar-clima, mcp-weather-server |
+| `aws_iam_role` × 2 | Lambda, Bedrock Agent (KB role en módulo bedrock-agent) |
 
 ## Alexa developer console
 

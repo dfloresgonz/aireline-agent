@@ -3,7 +3,7 @@ infra/.terraform/
 infra/.terraform.lock.hcl
 infra/*.tfstate
 infra/*.tfstate.backup
-infra/*.tfvars
+infra/secrets.tfvars
 infra/modules/**/dist/
 
 # Env
@@ -31,6 +31,9 @@ node_modules/
 .idea/
 *.swp
 *.swo
+
+# Alexa
+alexa/.ask/
 
 # Claude
 .claude/settings.local.json

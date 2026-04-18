@@ -2,8 +2,9 @@
 set -euo pipefail
 
 AWS_REGION="${AWS_REGION:-us-east-1}"
-DOCS_DIR="$(dirname "$0")/../knowledge-base/docs"
-cd "$(dirname "$0")/../infra"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+DOCS_DIR="${SCRIPT_DIR}/../knowledge-base/docs"
+cd "${SCRIPT_DIR}/../infra"
 
 BUCKET=$(terraform output -raw kb_bucket_name)
 KB_ID=$(terraform output -raw knowledge_base_id)

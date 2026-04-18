@@ -11,17 +11,28 @@
             "quiero reservar un vuelo",
             "consulta mi reservación"
           ],
-          "keywords": ["vuelos", "reservaciones", "aerolínea", "viajes"]
+          "keywords": [
+            "vuelos",
+            "reservaciones",
+            "aerolínea",
+            "viajes"
+          ]
         }
       },
       "isAvailableWorldwide": false,
-      "distributionCountries": ["ES", "MX", "CO", "PE", "AR"],
-      "category": "TRAVEL_AND_TRANSPORTATION"
+      "distributionCountries": [
+        "ES",
+        "MX",
+        "CO",
+        "PE",
+        "AR"
+      ],
+      "category": "FLIGHT_FINDERS"
     },
     "apis": {
       "custom": {
         "endpoint": {
-          "sourceDir": "lambda"
+          "uri": "arn:aws:lambda:us-east-1:055068999919:function:airlines-app-dev-skill"
         }
       }
     },

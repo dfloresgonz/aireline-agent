@@ -22,3 +22,8 @@ variable "bedrock_model_id" {
   type    = string
   default = "anthropic.claude-3-haiku-20240307-v1:0"
 }
+
+variable "alexa_skill_id" {
+  type    = string
+  default = ""
+}

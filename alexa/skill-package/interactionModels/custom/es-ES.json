@@ -28,10 +28,12 @@
             }
           ],
           "samples": [
-            "{query}",
             "quiero {query}",
             "necesito {query}",
-            "ayúdame a {query}"
+            "ayúdame a {query}",
+            "dime {query}",
+            "consulta {query}",
+            "pregunta {query}"
           ]
         }
       ],

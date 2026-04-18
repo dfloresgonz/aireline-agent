@@ -1,8 +1,10 @@
 terraform {
+  required_version = ">= 1.6"
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 5.0"
+      version = "~> 6.0"
     }
   }
 }
@@ -54,7 +56,6 @@ module "iam" {
   bedrock_model_id   = var.bedrock_model_id
 }
 
-# Pass 1: action lambdas (sin agent_id — aún no existe)
 module "lambdas" {
   source              = "./modules/lambdas"
   name_prefix         = local.name_prefix
@@ -76,7 +77,14 @@ module "bedrock_agent" {
   kb_bucket_arn                = aws_s3_bucket.kb_docs.arn
 }
 
-# Pass 2: inyectar agent_id en la skill lambda vía AWS CLI
+resource "aws_lambda_permission" "alexa" {
+  statement_id       = "AllowAlexaInvoke"
+  action             = "lambda:InvokeFunction"
+  function_name      = module.lambdas.skill_function_name
+  principal          = "alexa-appkit.amazon.com"
+  event_source_token = var.alexa_skill_id != "" ? var.alexa_skill_id : null
+}
+
 resource "terraform_data" "skill_env" {
   depends_on = [module.lambdas, module.bedrock_agent]
 

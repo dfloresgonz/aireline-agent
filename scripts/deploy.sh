@@ -2,7 +2,7 @@
 set -euo pipefail
 
 AWS_REGION="${AWS_REGION:-us-east-1}"
-cd "$(dirname "$0")/../infra"
+cd "$(cd "$(dirname "$0")" && pwd)/../infra"
 
 echo "==> terraform init"
 terraform init

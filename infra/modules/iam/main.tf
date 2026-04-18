@@ -33,8 +33,11 @@ resource "aws_iam_role_policy" "lambda" {
       },
       {
         Effect = "Allow"
-        Action = ["bedrock-agent-runtime:InvokeAgent"]
-        Resource = "arn:aws:bedrock:${var.aws_region}:${var.account_id}:agent-alias/*"
+        Action = [
+          "bedrock:InvokeAgent",
+          "bedrock-agent-runtime:InvokeAgent",
+        ]
+        Resource = "*"
       },
       {
         Effect = "Allow"
@@ -71,9 +74,12 @@ resource "aws_iam_role_policy" "bedrock_agent" {
     Version = "2012-10-17"
     Statement = [
       {
-        Effect   = "Allow"
-        Action   = ["bedrock:InvokeModel"]
-        Resource = "arn:aws:bedrock:${var.aws_region}::foundation-model/${var.bedrock_model_id}"
+        Effect = "Allow"
+        Action = ["bedrock:InvokeModel"]
+        Resource = [
+          "arn:aws:bedrock:${var.aws_region}:${var.account_id}:inference-profile/${var.bedrock_model_id}",
+          "arn:aws:bedrock:*::foundation-model/anthropic.claude-haiku-4-5-20251001-v1:0",
+        ]
       },
       {
         Effect   = "Allow"

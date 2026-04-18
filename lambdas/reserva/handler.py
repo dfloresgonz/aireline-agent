@@ -30,19 +30,22 @@ def lambda_handler(event, context):
     )
 
     return {
-        "actionGroup": action_group,
-        "function": function,
-        "functionResponse": {
-            "responseBody": {
-                "TEXT": {
-                    "body": json.dumps(
-                        {
-                            "reservation_id": reservation_id,
-                            "status": "confirmed",
-                            "message": f"Reservation {reservation_id} created successfully",
-                        }
-                    )
+        "messageVersion": "1.0",
+        "response": {
+            "actionGroup": action_group,
+            "function": function,
+            "functionResponse": {
+                "responseBody": {
+                    "TEXT": {
+                        "body": json.dumps(
+                            {
+                                "reservation_id": reservation_id,
+                                "status": "confirmed",
+                                "message": f"Reservation {reservation_id} created successfully",
+                            }
+                        )
+                    }
                 }
-            }
+            },
         },
     }

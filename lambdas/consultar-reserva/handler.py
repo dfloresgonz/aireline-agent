@@ -24,9 +24,12 @@ def lambda_handler(event, context):
         body = {"error": f"Reservation {reservation_id} not found"}
 
     return {
-        "actionGroup": action_group,
-        "function": function,
-        "functionResponse": {
-            "responseBody": {"TEXT": {"body": json.dumps(body)}}
+        "messageVersion": "1.0",
+        "response": {
+            "actionGroup": action_group,
+            "function": function,
+            "functionResponse": {
+                "responseBody": {"TEXT": {"body": json.dumps(body)}}
+            },
         },
     }

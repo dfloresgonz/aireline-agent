@@ -13,7 +13,7 @@ def lambda_handler(event, context):
     function = event.get("function")
     parameters = {p["name"]: p["value"] for p in event.get("parameters", [])}
 
-    reservation_id = parameters.get("reservation_id", "").upper()
+    reservation_id = parameters.get("reservation_id", "").replace(" ", "").upper()
     table = dynamodb.Table(os.environ["DYNAMODB_TABLE"])
     response = table.get_item(Key={"reservation_id": reservation_id})
 

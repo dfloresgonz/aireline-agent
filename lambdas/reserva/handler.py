@@ -38,7 +38,7 @@ def lambda_handler(event, context):
         Item={
             "reservation_id": reservation_id,
             "passenger_name": parameters["passenger_name"].strip(),
-            "flight_number": parameters["flight_number"].strip().upper(),
+            "flight_number": parameters["flight_number"].replace(" ", "").upper(),
             "departure_date": parameters["departure_date"].strip(),
             "seat_class": parameters.get("seat_class", "economy").strip() or "economy",
             "status": "confirmed",

@@ -10,7 +10,7 @@ resource "aws_lambda_function" "skill" {
   runtime          = "python3.12"
   handler          = "handler.lambda_handler"
   filename         = data.archive_file.skill.output_path
-  source_code_hash = data.archive_file.skill.output_base64sha256
+  source_code_hash = base64sha256("${data.archive_file.skill.output_base64sha256}-${var.agent_alias_id}")
   timeout          = 60
 
   environment {

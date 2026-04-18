@@ -1,0 +1,14 @@
+{
+  "name": "consultar_reserva",
+  "description": "Retrieves details of an existing reservation by ID",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "reservation_id": {
+        "type": "string",
+        "description": "The reservation ID to look up (e.g. A1B2C3D4)"
+      }
+    },
+    "required": ["reservation_id"]
+  }
+}

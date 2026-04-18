@@ -1,0 +1,40 @@
+# Terraform
+infra/.terraform/
+infra/.terraform.lock.hcl
+infra/*.tfstate
+infra/*.tfstate.backup
+infra/*.tfvars
+infra/modules/**/dist/
+
+# Env
+.env
+.env.local
+
+# AWS
+.aws/
+*.pem
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+dist/
+
+# Node
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Claude
+.claude/settings.local.json
+
+# macOS
+.DS_Store
+.AppleDouble

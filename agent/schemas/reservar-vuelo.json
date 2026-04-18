@@ -1,0 +1,27 @@
+{
+  "name": "reservar_vuelo",
+  "description": "Creates a new flight reservation for a passenger",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "passenger_name": {
+        "type": "string",
+        "description": "Full name of the passenger"
+      },
+      "flight_number": {
+        "type": "string",
+        "description": "Flight number (e.g. AA123)"
+      },
+      "departure_date": {
+        "type": "string",
+        "description": "Departure date in YYYY-MM-DD format"
+      },
+      "seat_class": {
+        "type": "string",
+        "enum": ["economy", "business", "first"],
+        "description": "Seat class"
+      }
+    },
+    "required": ["passenger_name", "flight_number", "departure_date"]
+  }
+}
